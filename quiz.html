@@ -20,10 +20,22 @@ h1{text-align:center;font-size:1.5em;padding:16px 0 8px;background:linear-gradie
 .stat-item.clickable{cursor:pointer;transition:all .2s}
 .stat-item.clickable:hover{background:var(--danger);color:#fff}
 .stat-item.clickable:hover .value{color:#fff}
-.progress-wrap{background:var(--card);border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid var(--border)}
-.progress-bar-outer{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-bottom:8px}
-.progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:4px;transition:width .4s}
-.progress-text{font-size:.78em;color:var(--text2);text-align:right}
+.progress-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.prog-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.prog-card:hover{border-color:var(--primary);transform:translateY(-1px)}
+.prog-card.active{border-color:var(--primary);background:rgba(59,130,246,.1)}
+.prog-card .prog-name{font-size:.72em;color:var(--text2);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog-card .prog-nums{font-size:1em;font-weight:700;color:var(--primary)}
+.prog-card .prog-nums.done{color:var(--success)}
+.prog-card .prog-mini{height:3px;background:var(--card2);border-radius:2px;margin-top:5px;overflow:hidden}
+.prog-card .prog-mini-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+.jump-row{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:12px;border:1px solid var(--border)}
+.jump-row label{font-size:.8em;color:var(--text2);white-space:nowrap}
+.jump-row input{width:70px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.9em;text-align:center}
+.jump-row input:focus{outline:none;border-color:var(--primary)}
+.jump-row button{padding:6px 14px;border-radius:6px;border:none;background:var(--primary);color:#fff;font-size:.8em;cursor:pointer}
+.jump-row button:hover{background:var(--primary-dark)}
+.jump-row .jump-hint{font-size:.72em;color:var(--text2);margin-left:auto}
 .cat-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .cat-tab{padding:6px 12px;border-radius:8px;font-size:.78em;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);transition:all .2s;white-space:nowrap}
 .cat-tab:hover{border-color:var(--primary);color:var(--text)}
@@ -76,6 +88,8 @@ h1{text-align:center;font-size:1.5em;padding:16px 0 8px;background:linear-gradie
 @media(max-width:600px){
 .container{padding:8px}h1{font-size:1.2em}
 .stats-bar{gap:4px;padding:8px}.stat-item{font-size:.75em;padding:3px 7px}
+.progress-grid{grid-template-columns:repeat(2,1fr);gap:4px}.prog-card{padding:8px 4px}
+.jump-row{flex-wrap:wrap;padding:8px 10px}.jump-row .jump-hint{display:none}
 .cat-tab{font-size:.72em;padding:5px 8px}.q-card{padding:14px}
 .q-text{font-size:.92em}.option{padding:10px 12px;font-size:.85em}.dot-grid{max-height:90px}
 }
@@ -83,6 +97,7 @@ h1{text-align:center;font-size:1.5em;padding:16px 0 8px;background:linear-gradie
 </head>
 <body>
 <div class="container">
+<a href="index.html" style="display:inline-flex;align-items:center;gap:4px;color:#94a3b8;font-size:.82em;text-decoration:none;margin-bottom:8px;padding:6px 12px;border-radius:8px;border:1px solid #1e3a5f;transition:all .2s" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#60a5fa'" onmouseout="this.style.borderColor='#1e3a5f';this.style.color='#94a3b8'">← 返回主页</a>
 <h1>POM知识闯关测验</h1>
 <p class="subtitle">心连心品牌 | 聚甲醛专业知识考核</p>
 <div class="stats-bar" id="statsBar">
@@ -92,10 +107,8 @@ h1{text-align:center;font-size:1.5em;padding:16px 0 8px;background:linear-gradie
 <div class="stat-item"><span class="label">正确率</span><span class="value" id="statRate">0%</span></div>
 <div class="stat-item clickable" id="statWrongBtn" title="点击查看错题"><span class="label">错题集</span><span class="value" id="statWrongCount">0</span></div>
 </div>
-<div class="progress-wrap">
-<div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar" style="width:0%"></div></div>
-<div class="progress-text" id="progressText">总进度: 0/400</div>
-</div>
+<div class="progress-grid" id="progressGrid"></div>
+<div class="jump-row"><label>跳转到第</label><input type="number" id="jumpInput" min="1" max="400" placeholder="题号"><label>题</label><button onclick="jumpToQ()">跳转</button><span class="jump-hint">输入1-400题号快速定位</span></div>
 <div class="cat-tabs" id="catTabs"></div>
 <div class="dot-grid" id="dotGrid"></div>
 <div id="questionArea"></div>
@@ -548,9 +561,47 @@ function renderStats(){
   document.getElementById("statWrong").textContent=w;
   document.getElementById("statRate").textContent=a?Math.round(c/a*100)+"%":"0%";
   document.getElementById("statWrongCount").textContent=w;
-  document.getElementById("progressBar").style.width=(a/400*100)+"%";
-  document.getElementById("progressText").textContent="\u603b\u8fdb\u5ea6: "+a+"/400";
+  var pg=document.getElementById("progressGrid");if(!pg)return;
+  var h="",cumulative=0;
+  CATS.forEach(function(cat){
+    var ans=getCatAnswered(cat.id),tot=getCatTotal(cat.id);
+    var pct=tot?Math.round(ans/tot*100):0;
+    var cls="prog-card"+(state.currentCat===cat.id&&state.viewMode==="normal"?" active":"");
+    var numCls=ans>=tot&&tot>0?"prog-nums done":"prog-nums";
+    h+='<div class="'+cls+'" onclick="switchCat(\''+cat.id+'\')">';
+    h+='<div class="prog-name">'+cat.name+'</div>';
+    h+='<div class="'+numCls+'">'+ans+'/'+tot+'</div>';
+    h+='<div class="prog-mini"><div class="prog-mini-fill" style="width:'+pct+'%"></div></div>';
+    h+='<div style="font-size:.65em;color:var(--text2);margin-top:3px">第'+(cumulative+1)+'-'+(cumulative+tot)+'题</div>';
+    h+='</div>';
+    cumulative+=tot;
+  });
+  pg.innerHTML=h;
 }
+
+function jumpToQ(){
+  var input=document.getElementById("jumpInput");
+  var n=parseInt(input.value);
+  if(!n||n<1||n>400){input.style.borderColor="var(--danger)";return}
+  input.style.borderColor="var(--border)";
+  var cum=0;
+  for(var i=0;i<CATS.length;i++){
+    var tot=getCatTotal(CATS[i].id);
+    if(n<=cum+tot){
+      state.currentCat=CATS[i].id;
+      state.currentQ=n-cum-1;
+      state.viewMode="normal";
+      render();
+      input.value="";
+      return;
+    }
+    cum+=tot;
+  }
+}
+document.addEventListener("DOMContentLoaded",function(){
+  var ji=document.getElementById("jumpInput");
+  if(ji)ji.addEventListener("keypress",function(e){if(e.key==="Enter")jumpToQ()});
+});
 
 function renderTabs(){
   let h="";
