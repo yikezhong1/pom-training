@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POM换料常见问题 · 交互动画</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:28px 20px;text-align:center}
+.header h1{font-size:26px;font-weight:700;color:#fff;margin-bottom:4px}
+.header p{font-size:14px;color:#93c5fd}
+.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:14px;background:#1e293b;border-bottom:1px solid #334155}
+.nav-btn{padding:7px 14px;border-radius:8px;border:1px solid #475569;background:transparent;color:#94a3b8;cursor:pointer;font-size:12px;transition:all .2s;white-space:nowrap}
+.nav-btn:hover{border-color:#60a5fa;color:#60a5fa}
+.nav-btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.main{max-width:920px;margin:0 auto;padding:20px}
+.scene{display:none}
+.scene.active{display:block}
+.scenario-box{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;margin-bottom:16px}
+.scenario-box h3{font-size:18px;color:#60a5fa;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.scenario-tag{display:inline-block;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;margin-bottom:8px}
+.scenario-tag.red{background:#7f1d1d;color:#fca5a5}
+.canvas-wrap{background:#1e293b;border-radius:12px;overflow:hidden;margin-bottom:16px;border:1px solid #334155}
+canvas{display:block;width:100%;height:auto}
+.info-panel{background:#1e293b;border-radius:12px;padding:22px;border:1px solid #334155;margin-bottom:16px}
+.info-panel h3{font-size:17px;color:#60a5fa;margin-bottom:10px}
+.info-panel p{font-size:14px;line-height:1.8;color:#cbd5e1}
+.tip{background:#172554;border:1px solid #1e40af;border-radius:8px;padding:14px 18px;font-size:13px;line-height:1.7;color:#93c5fd;margin-top:12px}
+.tip strong{color:#60a5fa}
+.step-nav{display:flex;gap:10px;margin-top:16px;justify-content:center;align-items:center;flex-wrap:wrap}
+.step-btn{padding:10px 24px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.step-btn.prev{background:#334155;color:#94a3b8}
+.step-btn.next{background:#2563eb;color:#fff}
+.step-btn:hover{opacity:.85}
+.step-indicator{display:flex;gap:6px;align-items:center}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#475569}
+.step-dot.active{background:#2563eb;width:24px;border-radius:4px}
+.progress-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:#1e293b;border-bottom:1px solid #334155;font-size:13px;color:#94a3b8;flex-wrap:wrap}
+.progress-bar .stat{display:flex;align-items:center;gap:4px}
+.progress-bar .stat-val{color:#60a5fa;font-weight:700}
+.wrong-btn{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.wrong-btn:hover{background:#991b1b}
+.wrong-btn .badge{background:#ef4444;color:#fff;border-radius:50%;padding:1px 6px;font-size:11px;margin-left:4px}
+.quiz-box{background:#172554;border:1px solid #1e40af;border-radius:12px;padding:20px;margin-top:16px}
+.quiz-box h4{font-size:15px;color:#93c5fd;margin-bottom:14px;line-height:1.6}
+.quiz-option{display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:8px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#cbd5e1;cursor:pointer;font-size:14px;line-height:1.5;transition:all .2s}
+.quiz-option:hover{border-color:#60a5fa;background:#1e3a5f}
+.quiz-option.correct{border-color:#22c55e;background:#14532d;color:#86efac}
+.quiz-option.wrong{border-color:#ef4444;background:#7f1d1d;color:#fca5a5}
+.quiz-option.disabled{cursor:default;opacity:.7}
+.quiz-option.disabled:hover{border-color:#334155;background:#1e293b}
+.quiz-option.correct.disabled:hover{border-color:#22c55e;background:#14532d}
+.quiz-option.wrong.disabled:hover{border-color:#ef4444;background:#7f1d1d}
+.quiz-feedback{margin-top:12px;padding:14px;border-radius:8px;font-size:13px;line-height:1.7}
+.quiz-feedback.correct{background:#14532d;border:1px solid #22c55e;color:#86efac}
+.quiz-feedback.wrong{background:#7f1d1d;border:1px solid #ef4444;color:#fca5a5}
+.wrong-panel{max-width:920px;margin:0 auto;padding:20px}
+.wrong-panel .wrong-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.wrong-panel .wrong-header h3{font-size:18px;color:#fca5a5}
+.wrong-back-btn{padding:8px 18px;border-radius:8px;border:1px solid #475569;background:transparent;color:#94a3b8;cursor:pointer;font-size:13px;transition:all .2s}
+.wrong-back-btn:hover{border-color:#60a5fa;color:#60a5fa}
+.wrong-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px}
+.wrong-nav button{padding:6px 16px;border-radius:6px;border:none;background:#334155;color:#94a3b8;cursor:pointer;font-size:13px}
+.wrong-nav button:hover{background:#475569}
+.wrong-nav button:disabled{opacity:.3;cursor:default}
+.wrong-nav span{color:#94a3b8;font-size:13px}
+@media(max-width:600px){.quiz-box{padding:14px}.quiz-option{padding:10px 12px;font-size:13px}.progress-bar{font-size:12px;gap:8px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>POM 换料常见问题 · 交互动画</h1>
+  <p>心连心POM销售 · 注塑调机实操指南 · 13种常见缺陷</p>
+</div>
+<div class="nav" id="nav"></div>
+<div class="progress-bar" id="progressBar"></div>
+<div id="quizContainer"></div>
+<div class="main" id="main"></div>
+<script>
+const scenes=[
+{id:"short-shot",title:"充填不足",icon:"⚡",scenario:"客户从A品牌M90换到心连心M90，第一模产品缺料——边角没填满。",steps:[{label:"问题现象",canvas:"shortshot",desc:"熔体没有完全充满模具型腔，产品边角缺失、轮廓不完整。这是换料后最常见的第一个问题。"},{label:"原因分析",canvas:"mfr-compare",desc:"不同厂家M90的MFR（熔融指数）存在差异。如果新料的MFR偏低，流动性就差一些。加上换料时参数没调整，自然充填不足。"},{label:"解决方案",canvas:"solution-shortshot",desc:"逐步提高注塑速度和料筒温度（每次+5℃，不超过210℃），适当增加注射压力。如果MFR差异太大，可考虑换用M270高流动牌号。"}],tips:"换料第一步：先查新旧料的MFR数据表，心里有数再调机。心连心POM的MFR稳定，批次间波动小，这是我们的优势。"},
+{id:"silver-streak",title:"银丝/条纹",icon:"〰",scenario:"换料后产品表面出现银色或黑色条纹，客户很紧张：'这料是不是有问题？'",steps:[{label:"问题现象",canvas:"streak",desc:"产品表面出现银色或黑色条纹，沿流动方向分布。客户第一反应是'料有问题'，但其实多数情况是工艺参数没调好。"},{label:"原因分析",canvas:"degrade",desc:"银丝的根本原因是气体——温度过高或停留时间过长导致POM降解释放甲醛气体，或浇口处剪切热过高产生降解气。"},{label:"解决方案",canvas:"fix-streak",desc:"降低料筒温度（每次-5℃）、降低背压和螺杆转速、优化浇口横截面。确保充分干燥原料（80-90℃×3-4h）。"}],tips:"遇到银丝别慌，先查温度！POM加工温度窗口窄（180-210℃），高了就分解。告诉客户：这不是料的问题，是需要重新找到最佳温度点。"},
+{id:"sink-mark",title:"缩孔/凹痕",icon:"◉",scenario:"换料后产品壁厚处出现表面凹陷（凹痕），或者切开发现内部有空洞（缩孔）。",steps:[{label:"问题现象",canvas:"sink",desc:"产品表面出现凹陷（凹痕），或内部形成空洞（缩孔）。多发生在壁厚较厚的区域、肋条根部、凸台附近。"},{label:"原因分析",canvas:"shrink",desc:"POM结晶度高，收缩率高达3.5%。不同厂家POM的收缩率可能有0.1-0.3%的微小差异。换料后如果保压参数不变，补缩不够就会出缩孔。"},{label:"解决方案",canvas:"fix-sink",desc:"提高保压压力（逐步+5bar）、延长保压时间（确保≥浇口封闭时间）、浇口设在厚壁区域。避免壁厚差异过大，肋厚建议为基本壁厚的0.5倍。"}],tips:"收缩率差异是换料的核心挑战。POM收缩率本身就大（3.5%），微小差异在精密件上就会放大。建议客户先做试模，用'产品重量法'确定最优保压时间。"},
+{id:"warpage",title:"翘曲变形",icon:"◇",scenario:"产品脱模后放一段时间就变弯了，直边变成了弧形。",steps:[{label:"问题现象",canvas:"warp",desc:"产品无法保持所需形状，直边向内或向外扭曲。有时脱模时看着正常，放几分钟后才逐渐变形。"},{label:"原因分析",canvas:"stress",desc:"翘曲的根源是不均匀收缩。壁厚不均、模具温度不均、流道过长导致压力损失、结晶度差异——都会造成各方向收缩不一致。"},{label:"解决方案",canvas:"fix-warp",desc:"使壁厚尽量均匀、优化模具加热系统均衡各处温差、增加浇口数量缩短流道、适当控制保压压力。必要时进行退火处理消除内应力。"}],tips:"翘曲问题有时候不是换料引起的，而是模具本身设计的问题——换料只是让问题暴露出来了。帮客户解决翘曲，就是建立信任的最好机会。"},
+{id:"burn",title:"烧焦",icon:"▪",scenario:"产品末端或角落出现黑色焦痕，像被火烧过一样。",steps:[{label:"问题现象",canvas:"burn",desc:"产品末端区域或截流区出现黑色/褐色焦痕。这是被压缩的高温空气灼烧熔体造成的，也叫Diesel Effect。"},{label:"原因分析",canvas:"air-trap",desc:"模具排气不佳，熔体填充时空气无法排出，被压缩到极小空间后温度急剧升高（可达500℃以上），灼烧POM熔体。"},{label:"解决方案",canvas:"fix-burn",desc:"优化模具排气系统（加排气槽）、在填充即将结束时降低注射速度、合理安排浇口位置。"}],tips:"烧焦问题80%是模具排气的问题，不是料的问题。但客户往往第一反应是'换料换出来的'。带着专业知识去现场，帮客户调好排气，信任感立刻建立。"},
+{id:"mold-deposit",title:"模垢",icon:"▣",scenario:"生产几百模后，模具表面出现白色/褐色沉积物，产品表面开始变粗糙。",steps:[{label:"问题现象",canvas:"mold",desc:"模具表面形成附着物（模垢），导致产品表面出现瑕疵、尺寸精度降低、模具热传导能力下降。"},{label:"原因分析",canvas:"deposit-cause",desc:"模垢来源：树脂热分解、小分子助剂析出、色母载体析出、水口料分解形成低聚物。不同厂家POM的模垢增长速度差异极大。"},{label:"解决方案",canvas:"fix-mold",desc:"选择模垢增长慢的优质原料（心连心POM表现优秀）、定期清理保养模具、改善模具排气系统、控制加工温度不要过高。"}],tips:"模垢是体现POM品质差异的关键指标。可以跟客户分享测试数据：心连心POM的模垢增长速度属于'极慢'级别，能大幅减少停机清理次数，提高生产效率。"},
+{id:"jetting",title:"喷射痕",icon:"⌇",scenario:"换料后产品表面出现蛇形纹路，从浇口延伸出去，像一条蛇爬过的痕迹。",steps:[{label:"问题现象",canvas:"jetting-problem",desc:"熔体从浇口高速射出，没有贴着模壁流动，而是像挤牙膏一样直接飞入型腔，形成蛇形纹路。产品表面从浇口开始有明显的波浪状条纹。"},{label:"原因分析",canvas:"jetting-cause",desc:"浇口位置不当（正对开阔型腔）、浇口截面太小、注射速度太快。熔体通过小浇口后突然进入大空间，失去壁面约束，产生自由射流。"},{label:"解决方案",canvas:"jetting-solution",desc:"调整浇口位置使其对准模壁、增大浇口截面、降低注射速度让熔体沿壁推进。也可采用扇形浇口或搭接浇口。"}],tips:"告诉客户喷射痕是浇口设计问题，调整浇口位置让熔体沿壁流动，或降低注射速度。心连心POM流动性好，适当降速不会影响充填。"},
+{id:"weld-line",title:"熔接线",icon:"═",scenario:"产品表面有明显的一条线痕，像被刀划过的痕迹，强度也下降了。",steps:[{label:"问题现象",canvas:"weld-problem",desc:"两股熔体前沿相遇时没有完全融合，在产品表面形成一条可见的线痕。该处强度明显下降，有时还伴有V型缺口。"},{label:"原因分析",canvas:"weld-cause",desc:"多股熔体在型腔内汇合时温度已经降低，分子链无法充分缠结。注射速度过快或过慢、模温偏低、排气不良都会加剧熔接线。"},{label:"解决方案",canvas:"weld-solution",desc:"提高熔体和模具温度、优化注射速度、改善排气、重新布置浇口将熔接线移到不显眼的位置。必要时增加溢料井。"}],tips:"熔接线不可能完全消除，但可以通过调整浇口位置把它藏到看不见的地方。帮客户做模流分析，提前预判熔接线位置，展现专业能力。"},
+{id:"flash",title:"飞边/溢边",icon:"▬",scenario:"产品边缘多出一圈薄片，像多了一圈'翅膀'，需要后续修整。",steps:[{label:"问题现象",canvas:"flash-problem",desc:"熔体从模具分型面或镶件间隙溢出，在产品边缘形成多余的薄片。严重时整圈都有飞边，影响尺寸精度和外观。"},{label:"原因分析",canvas:"flash-cause",desc:"锁模力不足、模具分型面损伤或变形、熔体温度过高导致粘度太低、注射速度/压力过大，都会让熔体挤入模具间隙。"},{label:"解决方案",canvas:"flash-solution",desc:"增大锁模力、修复模具分型面、降低熔体温度和注射压力/速度。检查模具是否变形，镶件配合是否紧密。"}],tips:"飞边问题先检查锁模力够不够，再看模具分型面有没有损伤。换料后如果新料流动性更好（MFR更高），需要适当降低注射压力。"},
+{id:"demolding",title:"脱模困难",icon:"⊘",scenario:"产品卡在模具里拿不出来，硬顶出来又留下白色痕迹甚至开裂。",steps:[{label:"问题现象",canvas:"demold-problem",desc:"产品粘附在模具型腔内，顶针顶出后产品表面留下白色应力痕、顶针印，甚至出现裂纹。严重时产品直接卡在模腔里。"},{label:"原因分析",canvas:"demold-cause",desc:"顶出机构不足、模具表面粗糙、冷却时间不够、保压过高导致过填充、脱模斜度不够。换料后收缩率不同可能导致包紧力变化。"},{label:"解决方案",canvas:"demold-solution",desc:"增加顶针数量和面积、抛光模具表面、延长冷却时间、降低保压压力、增大脱模斜度。"}],tips:"脱模困难经常不是料的问题，而是模具设计的问题。帮客户分析原因，建立专业形象。心连心POM收缩率稳定，有利于脱模控制。"},
+{id:"ripple",title:"涟漪纹",icon:"◎",scenario:"产品表面出现一圈一圈的纹路，像黑胶唱片一样，主要出现在流道末端。",steps:[{label:"问题现象",canvas:"ripple-problem",desc:"产品表面形成同心圆状的波纹沟槽，像唱片纹路。通常出现在熔体流动末端或壁厚突变区域，影响外观质量。"},{label:"原因分析",canvas:"ripple-cause",desc:"熔体温度和模温太低、注射速度太慢，导致熔体前沿以'走走停停'的方式推进。每次停顿都在表面留下一道痕迹。流道截面太小、流路过长也会加剧。"},{label:"解决方案",canvas:"ripple-solution",desc:"提高熔体和模具温度、增大注射速度、扩大流道截面。让熔体前沿保持连续稳定的推进速度。"}],tips:"涟漪纹主要出现在流道末端，提高温度和速度通常就能解决。告诉客户：这不是料的问题，是工艺参数需要重新匹配。"},
+{id:"color-streak",title:"色绺",icon:"▧",scenario:"换料后产品颜色不均匀，一条一条的色差，客户质疑颜料品质。",steps:[{label:"问题现象",canvas:"color-problem",desc:"产品表面出现颜色深浅不一的条纹或条带，局部色差明显。换色或换料后尤其容易出现。"},{label:"原因分析",canvas:"color-cause",desc:"色母分散不均匀、材料被污染（混入异色料）、料筒或热流道死角残留旧料、螺杆混合能力不足。"},{label:"解决方案",canvas:"color-solution",desc:"选用与基料相容性好的色母、提高螺杆背压改善混合效果、彻底清洗料筒/喷嘴/热流道。换色时先用清洗料过渡。"}],tips:"换色时一定要彻底清洗料筒和热流道，死角的旧料会导致色差。建议客户准备专用清洗料，换色效率提高50%以上。"},
+{id:"entrapped-air",title:"困气",icon:"○",scenario:"产品内部有气泡，或者表面有鼓包，切开能看到空洞。",steps:[{label:"问题现象",canvas:"entrap-problem",desc:"产品内部形成气泡或表面出现鼓包。与烧焦不同，困气不一定有焦痕，但内部有明显空腔，影响强度和外观。"},{label:"原因分析",canvas:"entrap-cause",desc:"模具设计导致空气被熔体包围而无法排出。排气系统不合理、排气槽堵塞、浇口位置使熔体形成包围结构。"},{label:"解决方案",canvas:"entrap-solution",desc:"用模流分析优化模具设计、改善排气系统（加排气槽/排气镶件）、定期清理排气通道、调整浇口位置避免气穴。"}],tips:"困气和烧焦经常一起出现，根本原因都是排气不良。帮客户做模流分析，提前预测困气位置，是最专业的服务方式。"}
+];
+
+const quizData=[
+{q:"客户从A品牌M90换到心连心M90后出现充填不足，首先应检查什么？",o:["直接提高料温到230°C","对比两品牌MFR数据并调整注塑速度和压力","降低锁模力","增大制品壁厚"],a:1,e:"换料后充填不足，首先对比MFR差异，再调整速度/压力/温度。直接升温到230°C会导致POM分解。"},
+{q:"换料后出现银丝，以下哪个排查顺序最合理？",o:["直接换回原品牌料","先查干燥→查料温→查浇口→查死角降解","降低所有温度50%","只增大保压压力"],a:1,e:"银丝排查要系统有序：干燥→料温→浇口→死角。不能一遇到问题就换料。"},
+{q:"换料后厚壁处出现缩孔，最优先调整什么？",o:["降低料筒温度","增大保压压力并延长保压时间","提高注射速度","减小浇口尺寸"],a:1,e:"缩孔因保压补缩不足，首先增大保压压力和时间。"},
+{q:"换料后制品翘曲变形，根本原因是什么？",o:["心连心POM质量差","各部位收缩不均匀导致内应力差异","模具温度太低","注射速度太快"],a:1,e:"翘曲根本原因是收缩不均匀，需系统优化壁厚、模温、浇口和保压。"},
+{q:"产品末端出现焦痕，最有效的解决措施是？",o:["提高注射速度","焦痕位置增设排气槽并降低末端注射速度","提高料筒温度","增大保压压力"],a:1,e:"烧焦(困气)的解决：增设排气槽+末端降速。提高速度会加重困气。"},
+{q:"换料后模垢加剧，以下哪个措施组合最合理？",o:["只降低模温","提高干燥温度+适当降低加工温度+定期清理模具","增大保压压力","只降低注射速度"],a:1,e:"模垢需综合处理：提高干燥(100-120°C)+降低加工温度+定期清理。心连心POM模垢增长属于极慢级别。"},
+{q:"换料后出现蛇形喷射痕，最合理的措施是？",o:["进一步提高注射速度","修改浇口设计并降低初始注射速度","增大保压压力","降低料筒温度"],a:1,e:"喷射痕因小浇口高速射流导致，需修改浇口(增大/改扇形)+降低初始速度。"},
+{q:"换料后熔接线明显且容易开裂，最有效的改善措施是？",o:["降低料筒温度","提高料温和速度改善融合质量，优化浇口位置使焊接线移离高应力区","降低注射速度","增大保压压力"],a:1,e:"提高料温/速度使熔体更好融合+优化浇口将焊接线移至低应力区。"},
+{q:"换料后出现飞边，首先排查什么？",o:["降低锁模力","对比新旧料MFR，检查锁模力、注射压力/温度是否偏高、模具配合","提高注射速度","增大计量行程"],a:1,e:"飞边排查顺序：MFR差异→锁模力→压力/温度→模具配合。从易到难。"},
+{q:"换料后制品脱模困难(粘模)，最合理的排查方向是？",o:["只查锁模力","检查模温差异→脱模斜度→顶出系统→模腔状态","只查注射速度","只查保压压力"],a:1,e:"脱模困难需综合排查：哪侧模温更高、脱模斜度、顶出系统、模腔光洁度。"},
+{q:"换料后出现涟漪纹(唱片纹)，最可能的原因是？",o:["保压压力过大","料温和注射速度偏低导致流动不稳定","锁模力不足","原料含水"],a:1,e:"涟漪纹因前锋温度低、流动不稳定，需提高料温和注射速度。"},
+{q:"换料后出现色绺(颜色条纹)，最合理的措施是？",o:["降低料筒温度","彻底清洗料筒模具+检查色母分散性+确保充分混合","增大保压压力","降低注射速度"],a:1,e:"色绺需清洗+检查色母分散性+充分混合。换色时建议用HDPE清洗料筒。"},
+{q:"换料后制品内部出现气泡，最优先的措施是？",o:["增大保压压力","先确认干燥是否充分，再检查是否剪切过热导致降解产气","降低模温","增大锁模力"],a:1,e:"气泡先排查水分(干燥是否充分)，再查剪切降解。困气则需改善排气系统。"}
+];
+
+let currentScene=0,currentStep=0,animFrame=null;
+let quizState={answered:{},wrongList:[],wrongIdx:0,viewMode:'normal'};
+function init(){
+  const nav=document.getElementById('nav');
+  scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='nav-btn'+(i===0?' active':'');b.textContent=s.icon+' '+s.title;b.onclick=()=>switchScene(i);nav.appendChild(b)});
+  document.getElementById('quizContainer').innerHTML='';
+  updateProgress();
+  renderScene();
+}
+function switchScene(idx){currentScene=idx;currentStep=0;quizState.viewMode='normal';document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));renderScene()}
+function renderScene(){
+  if(animFrame)cancelAnimationFrame(animFrame);
+  const s=scenes[currentScene],main=document.getElementById('main'),step=s.steps[currentStep];
+  let h='<div class="scene active"><div class="scenario-box"><h3><span class="icon">'+s.icon+'</span>'+s.title+'</h3><div class="scenario-tag red">换料场景</div><p style="font-size:15px;line-height:1.7;color:#cbd5e1">'+s.scenario+'</p></div>';
+  h+='<div class="canvas-wrap"><canvas id="mainCanvas" width="860" height="360"></canvas></div>';
+  h+='<div class="info-panel"><div class="step-indicator">';
+  s.steps.forEach((_,i)=>{h+='<div class="step-dot'+(i===currentStep?' active':'')+'"></div>'});
+  h+='</div><h3 style="margin-top:12px">'+step.label+'</h3><p>'+step.desc+'</p></div>';
+  h+='<div class="step-nav">';
+  if(currentStep>0)h+='<button class="step-btn prev" onclick="prevStep()">\u2190 上一步</button>';
+  if(currentStep<s.steps.length-1)h+='<button class="step-btn next" onclick="nextStep()">下一步 \u2192</button>';
+  if(currentStep===s.steps.length-1){
+    h+='</div><div class="tip"><strong>\uD83D\uDCA1 销售话术：</strong>'+s.tips+'</div>';
+    h+='<div id="quizArea"></div>';
+    if(quizState.answered[currentScene]&&currentScene<scenes.length-1)h+='<div style="text-align:center;margin-top:12px"><button class="step-btn next" onclick="switchScene('+(currentScene+1)+')">下一个问题 \u2192</button></div>';
+  }else h+='</div>';
+  h+='</div>';
+  main.innerHTML=h;
+  document.getElementById('quizContainer').innerHTML='';
+  updateProgress();
+  if(currentStep===s.steps.length-1)renderQuiz(currentScene);
+  startAnimation(step.canvas);
+}
+function nextStep(){currentStep++;renderScene()}
+function prevStep(){currentStep--;renderScene()}
+
+function updateProgress(){
+  var pb=document.getElementById('progressBar');if(!pb)return;
+  var total=scenes.length,done=Object.keys(quizState.answered).length,correct=0;
+  for(var k in quizState.answered)if(quizState.answered[k].correct)correct++;
+  var wl=quizState.wrongList.length;
+  var h='<span class="stat">\u{1F4DD} 答题进度: <span class="stat-val">'+done+'/'+total+'</span></span>';
+  h+='<span class="stat">\u2705 正确: <span class="stat-val">'+correct+'</span></span>';
+  h+='<span class="stat">\u274C 错题: <span class="stat-val">'+wl+'</span></span>';
+  if(wl>0)h+='<button class="wrong-btn" onclick="showWrongList()">\u{1F4D6} 错题集 <span class="badge">'+wl+'</span></button>';
+  pb.innerHTML=h;
+}
+
+function renderQuiz(sceneIdx){
+  var area=document.getElementById('quizArea');if(!area)return;
+  var q=quizData[sceneIdx],ans=quizState.answered[sceneIdx];
+  var h='<div class="quiz-box"><h4>\u{1F4DD} \u77E5\u8BC6\u68C0\u6D4B\uFF1A'+q.q+'</h4>';
+  q.o.forEach(function(opt,i){
+    var cls='quiz-option';
+    if(ans){
+      cls+=' disabled';
+      if(i===q.a)cls+=' correct';
+      else if(i===ans.selected&&i!==q.a)cls+=' wrong';
+    }
+    h+='<button class="'+cls+'" '+(ans?'disabled':'')+' onclick="answerQuiz('+sceneIdx+','+i+')">'+String.fromCharCode(65+i)+'. '+opt+'</button>';
+  });
+  if(ans){
+    var fc=ans.correct?'correct':'wrong';
+    var ic=ans.correct?'\u2705':'\u274C';
+    h+='<div class="quiz-feedback '+fc+'">'+ic+' '+(ans.correct?'回答正确！':'回答错误！正确答案是 '+String.fromCharCode(65+q.a)+'。')+'<br><strong>解析：</strong>'+q.e+'</div>';
+  }
+  h+='</div>';
+  area.innerHTML=h;
+}
+
+function answerQuiz(sceneIdx,selected){
+  if(quizState.answered[sceneIdx])return;
+  var q=quizData[sceneIdx],correct=selected===q.a;
+  quizState.answered[sceneIdx]={correct:correct,selected:selected};
+  if(!correct){
+    var exists=false;
+    for(var i=0;i<quizState.wrongList.length;i++){if(quizState.wrongList[i].sceneIdx===sceneIdx){exists=true;break;}}
+    if(!exists)quizState.wrongList.push({sceneIdx:sceneIdx,selected:selected});
+  }
+  updateProgress();
+  renderQuiz(sceneIdx);
+  var s=scenes[sceneIdx];
+  if(correct&&currentScene<scenes.length-1){
+    var area=document.getElementById('quizArea');
+    if(area)area.innerHTML+='<div style="text-align:center;margin-top:12px"><button class="step-btn next" onclick="switchScene('+(currentScene+1)+')">下一个问题 \u2192</button></div>';
+  }
+}
+
+function showWrongList(){
+  if(quizState.wrongList.length===0)return;
+  quizState.viewMode='wrong';quizState.wrongIdx=0;
+  if(animFrame)cancelAnimationFrame(animFrame);
+  var main=document.getElementById('main');
+  main.innerHTML='<div class="wrong-panel"><div class="wrong-header"><h3>\u{1F4D6} 错题集</h3><button class="wrong-back-btn" onclick="backToNormal()">\u2190 返回</button></div><div id="wrongContent"></div></div>';
+  document.getElementById('quizContainer').innerHTML='';
+  updateProgress();
+  renderWrongItem();
+}
+
+function renderWrongItem(){
+  var item=quizState.wrongList[quizState.wrongIdx];if(!item)return;
+  var sceneIdx=item.sceneIdx,q=quizData[sceneIdx],s=scenes[sceneIdx];
+  var wc=document.getElementById('wrongContent');if(!wc)return;
+  var h='<div class="wrong-nav"><button onclick="wrongPrev()" '+(quizState.wrongIdx===0?'disabled':'')+'>\u2190 上一题</button><span>'+String.fromCharCode(65+quizState.wrongIdx)+' ('+quizState.wrongIdx+1+'/'+quizState.wrongList.length+')</span><button onclick="wrongNext()" '+(quizState.wrongIdx===quizState.wrongList.length-1?'disabled':'')+'>下一题 \u2192</button></div>';
+  h+='<div class="scenario-box"><h3><span class="icon">'+s.icon+'</span>'+s.title+'</h3><p style="font-size:14px;color:#cbd5e1;margin-top:8px">'+s.scenario+'</p></div>';
+  h+='<div class="canvas-wrap"><canvas id="mainCanvas" width="860" height="360"></canvas></div>';
+  h+='<div class="quiz-box"><h4>\u{1F4DD} '+q.q+'</h4>';
+  q.o.forEach(function(opt,i){
+    var cls='quiz-option disabled';
+    if(i===q.a)cls+=' correct';
+    else if(i===item.selected&&i!==q.a)cls+=' wrong';
+    h+='<button class="'+cls+'" disabled>'+String.fromCharCode(65+i)+'. '+opt+'</button>';
+  });
+  h+='<div class="quiz-feedback wrong">\u274C 你的答案：'+String.fromCharCode(65+item.selected)+' | 正确答案：'+String.fromCharCode(65+q.a)+'<br><strong>解析：</strong>'+q.e+'</div></div>';
+  wc.innerHTML=h;
+  startAnimation(s.steps[s.steps.length-1].canvas);
+}
+
+function wrongPrev(){if(quizState.wrongIdx>0){quizState.wrongIdx--;renderWrongItem()}}
+function wrongNext(){if(quizState.wrongIdx<quizState.wrongList.length-1){quizState.wrongIdx++;renderWrongItem()}}
+function backToNormal(){quizState.viewMode='normal';renderScene()}
+
+function startAnimation(type){
+  const canvas=document.getElementById('mainCanvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');let t=0;
+  function loop(){t+=0.016;ctx.clearRect(0,0,860,360);
+    if(window['draw_'+type.replace(/-/g,'_')])window['draw_'+type.replace(/-/g,'_')](ctx,t);
+    animFrame=requestAnimationFrame(loop);
+  }loop();
+}
+function drawLabel(ctx,text,x,y,color,size){ctx.font='bold '+(size||14)+'px "Microsoft YaHei"';ctx.fillStyle=color||'#e2e8f0';ctx.textAlign='center';ctx.fillText(text,x,y)}
+function drawArrow(ctx,x1,y1,x2,y2,color){const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color||'#60a5fa';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-10*Math.cos(a-.5),y2-10*Math.sin(a-.5));ctx.lineTo(x2-10*Math.cos(a+.5),y2-10*Math.sin(a+.5));ctx.closePath();ctx.fillStyle=color||'#60a5fa';ctx.fill()}
+function moldRect(ctx,x,y,w,h,sc){ctx.fillStyle='#334155';ctx.fillRect(x,y,w,h);ctx.strokeStyle=sc||'#64748b';ctx.lineWidth=3;ctx.strokeRect(x,y,w,h)}
+
+// === SCENE 1: SHORT SHOT ===
+function draw_shortshot(ctx,t){moldRect(ctx,180,60,500,240);ctx.fillStyle='#475569';ctx.fillRect(130,150,50,60);drawLabel(ctx,'浇口',155,145,'#94a3b8',12);const f=280+Math.sin(t*2)*10,g=ctx.createLinearGradient(180,0,180+f,0);g.addColorStop(0,'#f59e0b');g.addColorStop(1,'#d97706');ctx.fillStyle=g;ctx.fillRect(183,63,f,234);ctx.setLineDash([5,5]);ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.strokeRect(183+f,63,500-f-3,234);ctx.setLineDash([]);drawLabel(ctx,'熔体前沿',183+f/2,185,'#fff',14);drawLabel(ctx,'未填满',183+f+(500-f)/2,185,'#ef4444',14);drawArrow(ctx,200,30,400,30,'#60a5fa');drawLabel(ctx,'流动方向',300,22,'#60a5fa',12);ctx.fillStyle='#7f1d1d';ctx.fillRect(600,20,200,30);drawLabel(ctx,'充填不足',700,40,'#fca5a5',14)}
+function draw_mfr_compare(ctx,t){ctx.fillStyle='#1e40af';ctx.fillRect(150,80,120,200);ctx.strokeStyle='#3b82f6';ctx.lineWidth=2;ctx.strokeRect(150,80,120,200);drawLabel(ctx,'原品牌 M90',210,70,'#93c5fd',14);drawLabel(ctx,'MFR=9.0',210,180,'#fff',16);for(let i=0;i<5;i++){const y=300+i*10,w=Math.sin(t*3+i)*5;ctx.beginPath();ctx.moveTo(170,y);ctx.quadraticCurveTo(210+w,y+5,250,y);ctx.strokeStyle='rgba(59,130,246,'+(0.8-i*0.15)+')';ctx.lineWidth=3;ctx.stroke()}drawLabel(ctx,'流动性好',210,355,'#22c55e',13);ctx.fillStyle='#7c2d12';ctx.fillRect(500,80,120,200);ctx.strokeStyle='#ea580c';ctx.lineWidth=2;ctx.strokeRect(500,80,120,200);drawLabel(ctx,'心连心 M90',560,70,'#fdba74',14);drawLabel(ctx,'MFR=8.5',560,180,'#fff',16);for(let i=0;i<4;i++){const y=300+i*12,w=Math.sin(t*2.5+i)*4;ctx.beginPath();ctx.moveTo(520,y);ctx.quadraticCurveTo(560+w,y+5,600,y);ctx.strokeStyle='rgba(234,88,12,'+(0.7-i*0.15)+')';ctx.lineWidth=3;ctx.stroke()}drawLabel(ctx,'流动性略低',560,355,'#f59e0b',13);drawArrow(ctx,320,180,460,180,'#94a3b8');drawLabel(ctx,'对比MFR',390,170,'#94a3b8',12);ctx.fillStyle='#1e293b';ctx.fillRect(300,10,260,35);ctx.strokeStyle='#f59e0b';ctx.strokeRect(300,10,260,35);drawLabel(ctx,'MFR差异=流动性差异',430,32,'#f59e0b',14)}
+function draw_solution_shortshot(ctx,t){moldRect(ctx,100,100,300,160,'#22c55e');const temp=185+Math.sin(t)*5;ctx.fillStyle='#1e293b';ctx.fillRect(480,80,160,200);ctx.strokeStyle='#475569';ctx.lineWidth=1;ctx.strokeRect(480,80,160,200);drawLabel(ctx,'料筒温度',560,70,'#94a3b8',13);const tH=(temp-150)/80*160;const tG=ctx.createLinearGradient(0,260-tH,0,260);tG.addColorStop(0,'#ef4444');tG.addColorStop(1,'#22c55e');ctx.fillStyle=tG;ctx.fillRect(520,260-tH,30,tH);ctx.strokeStyle='#64748b';ctx.strokeRect(520,100,30,160);drawLabel(ctx,temp.toFixed(0)+'℃',535,90,'#fff',16);ctx.fillStyle='rgba(34,197,94,0.1)';ctx.fillRect(510,140,50,80);drawLabel(ctx,'安全区',640,180,'#22c55e',11);ctx.fillStyle='rgba(239,68,68,0.1)';ctx.fillRect(510,100,50,40);drawLabel(ctx,'分解区',640,120,'#ef4444',11);const fp=(Math.sin(t*1.5)+1)/2;ctx.fillStyle='#f59e0b';ctx.fillRect(103,103,294*fp,154);if(fp>0.95)drawLabel(ctx,'完全填满',250,185,'#22c55e',18);['注塑速度+','料温+5℃','注射压力+'].forEach((s,i)=>{const a=Math.sin(t*2+i*0.5)*0.3+0.7;ctx.fillStyle='rgba(34,197,94,'+a+')';ctx.fillRect(100+i*110,290,100,30);drawLabel(ctx,s,150+i*110,310,'#fff',12)})}
+
+// === SCENE 2: SILVER STREAKS ===
+function draw_streak(ctx,t){ctx.fillStyle='#e2e8f0';ctx.fillRect(130,40,600,280);ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.strokeRect(130,40,600,280);drawLabel(ctx,'产品表面',430,30,'#94a3b8',13);for(let i=0;i<6;i++){const y=80+i*40,w=Math.sin(t*2+i)*3;ctx.beginPath();ctx.moveTo(150,y);for(let x=150;x<700;x+=10)ctx.lineTo(x,y+Math.sin((x+t*50+i*30)*0.02)*(4+w));ctx.strokeStyle='rgba(100,116,139,'+(0.4+Math.sin(t+i)*0.2)+')';ctx.lineWidth=2+Math.sin(t+i)*0.5;ctx.stroke()}const mx=400+Math.sin(t*0.5)*50,my=180;ctx.beginPath();ctx.arc(mx,my,50,0,Math.PI*2);ctx.strokeStyle='#60a5fa';ctx.lineWidth=3;ctx.stroke();ctx.save();ctx.beginPath();ctx.arc(mx,my,48,0,Math.PI*2);ctx.clip();for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(mx-40,my+i*15);for(let x=mx-40;x<mx+40;x+=5)ctx.lineTo(x,my+i*15+Math.sin((x+t*30)*0.05)*3);ctx.strokeStyle='#475569';ctx.lineWidth=2;ctx.stroke()}ctx.restore();drawLabel(ctx,'银丝/条纹',430,345,'#ef4444',16)}
+function draw_degrade(ctx,t){moldRect(ctx,100,60,660,240);[{x:100,w:165,temp:'170℃',c:'#22c55e',l:'后段'},{x:265,w:165,temp:'190℃',c:'#f59e0b',l:'中段'},{x:430,w:165,temp:'205℃',c:'#ea580c',l:'前段'},{x:595,w:165,temp:'230℃!',c:'#ef4444',l:'喷嘴'}].forEach(z=>{ctx.fillStyle=z.c+'20';ctx.fillRect(z.x,60,z.w,240);drawLabel(ctx,z.temp,z.x+z.w/2,100,z.c,18);drawLabel(ctx,z.l,z.x+z.w/2,130,'#94a3b8',12)});ctx.beginPath();ctx.moveTo(120,200);for(let x=120;x<740;x+=5)ctx.lineTo(x,200+Math.sin((x+t*80)*0.05)*20);ctx.strokeStyle='#94a3b8';ctx.lineWidth=4;ctx.stroke();for(let i=0;i<8;i++){const bx=600+Math.sin(t*3+i*2)*40,by=160+Math.cos(t*2+i*3)*50,r=3+Math.sin(t*4+i)*2;ctx.beginPath();ctx.arc(bx,by,r,0,Math.PI*2);ctx.fillStyle='rgba(239,68,68,0.6)';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=1;ctx.stroke()}ctx.fillStyle='#7f1d1d';ctx.fillRect(560,250,180,30);drawLabel(ctx,'POM热分解',650,270,'#fca5a5',14);drawLabel(ctx,'-CH2O- → HCHO↑',430,320,'#f59e0b',13)}
+function draw_fix_streak(ctx,t){moldRect(ctx,100,60,660,200,'#22c55e');[{x:100,w:165,temp:'175℃',c:'#22c55e'},{x:265,w:165,temp:'190℃',c:'#22c55e'},{x:430,w:165,temp:'200℃',c:'#22c55e'},{x:595,w:165,temp:'195℃',c:'#22c55e'}].forEach(z=>{ctx.fillStyle=z.c+'15';ctx.fillRect(z.x,60,z.w,200);drawLabel(ctx,z.temp,z.x+z.w/2,120,z.c,18)});ctx.beginPath();ctx.moveTo(120,180);for(let x=120;x<740;x+=5)ctx.lineTo(x,180+Math.sin((x+t*60)*0.05)*15);ctx.strokeStyle='#94a3b8';ctx.lineWidth=4;ctx.stroke();ctx.fillStyle='#f59e0b40';ctx.fillRect(103,140,654,80);drawLabel(ctx,'熔体均匀无气泡',430,185,'#22c55e',14);['降低料温至180-200℃','降低背压和螺杆转速','充分干燥原料','检查浇口尺寸'].forEach((c,i)=>{const y=290+i*22;ctx.fillStyle='#14532d';ctx.fillRect(200,y-12,460,20);drawLabel(ctx,'✓ '+c,430,y+2,'#86efac',12)})}
+
+// === SCENE 3: SINK MARKS ===
+function draw_sink(ctx,t){ctx.fillStyle='#e2e8f0';ctx.fillRect(130,80,600,200);ctx.fillStyle='#cbd5e1';ctx.fillRect(350,80,160,200);const sd=5+Math.sin(t*2)*2;ctx.beginPath();ctx.moveTo(380,80);ctx.quadraticCurveTo(430,80+sd,480,80);ctx.strokeStyle='#ef4444';ctx.lineWidth=3;ctx.stroke();const vr=15+Math.sin(t*3)*3;ctx.beginPath();ctx.arc(430,180,vr,0,Math.PI*2);ctx.fillStyle='rgba(239,68,68,0.3)';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'表面凹陷(凹痕)',430,65,'#ef4444',14);drawLabel(ctx,'内部空洞(缩孔)',430,220,'#ef4444',14);drawLabel(ctx,'壁厚区域',430,310,'#f59e0b',14)}
+function draw_shrink(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(100,40,660,280);const p=(Math.sin(t*0.8)+1)/2;drawLabel(ctx,'熔融态(无定型)',250,60,'#f59e0b',14);for(let i=0;i<15;i++){const x=150+(i*37+t*20)%200,y=80+(i*53)%200;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(i)*20,y+Math.sin(i)*20);ctx.strokeStyle='rgba(245,158,11,'+(0.3+(i%3)*0.1)+')';ctx.lineWidth=2;ctx.stroke()}drawArrow(ctx,370,180,430,180,'#60a5fa');drawLabel(ctx,'冷却结晶',400,170,'#60a5fa',12);drawLabel(ctx,'体积收缩3.5%',400,200,'#ef4444',12);drawLabel(ctx,'固态(高结晶)',580,60,'#22c55e',14);for(let i=0;i<12;i++)for(let j=0;j<8;j++){ctx.fillStyle='rgba(34,197,94,'+(0.2+p*0.3)+')';ctx.fillRect(480+i*20,80+j*25,16,20);ctx.strokeStyle='#22c55e40';ctx.lineWidth=1;ctx.strokeRect(480+i*20,80+j*25,16,20)}ctx.fillStyle='#0f172a';ctx.fillRect(150,300,560,30);drawLabel(ctx,'不同厂家收缩率差异:0.1%~0.3%',430,320,'#f59e0b',13)}
+function draw_fix_sink(ctx,t){moldRect(ctx,200,60,460,240,'#22c55e');ctx.fillStyle='#475569';ctx.fillRect(380,300,100,30);drawLabel(ctx,'浇口设在厚壁区',430,320,'#22c55e',13);for(let i=0;i<5;i++){const x=280+i*60,p=Math.sin(t*3+i*0.5)*5;drawArrow(ctx,x,50-p,x,80,'#22c55e')}drawLabel(ctx,'保压压力持续补缩',430,35,'#22c55e',14);ctx.fillStyle='#f59e0b50';ctx.fillRect(203,63,454,234);drawLabel(ctx,'无凹痕',300,180,'#22c55e',16);drawLabel(ctx,'无缩孔',550,180,'#22c55e',16);ctx.fillStyle='#172554';ctx.fillRect(200,340,460,25);drawLabel(ctx,'肋厚≤基本壁厚×0.5',430,357,'#93c5fd',13)}
+
+// === SCENE 4: WARPAGE ===
+function draw_warp(ctx,t){const b=Math.sin(t*1.5)*15;ctx.setLineDash([5,5]);ctx.strokeStyle='#475569';ctx.lineWidth=2;ctx.strokeRect(200,100,460,160);ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(200,100);ctx.quadraticCurveTo(430,100+b,660,100);ctx.lineTo(660,260);ctx.quadraticCurveTo(430,260-b*0.5,200,260);ctx.closePath();ctx.fillStyle='#e2e8f0';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawArrow(ctx,430,100,430,100+b,'#ef4444');drawLabel(ctx,'变形量',460,100+b/2,'#ef4444',12);drawLabel(ctx,'原始形状',430,85,'#475569',12);drawLabel(ctx,'翘曲变形',430,300,'#ef4444',16);drawLabel(ctx,'脱模后→逐渐变形',430,330,'#f59e0b',13)}
+function draw_stress(ctx,t){moldRect(ctx,150,60,560,240);const g=ctx.createLinearGradient(150,60,710,60);g.addColorStop(0,'#ef444440');g.addColorStop(0.5,'#f59e0b20');g.addColorStop(1,'#3b82f640');ctx.fillStyle=g;ctx.fillRect(153,63,554,234);drawLabel(ctx,'高温侧(收缩大)',250,50,'#ef4444',13);drawLabel(ctx,'低温侧(收缩小)',600,50,'#3b82f6',13);for(let i=0;i<4;i++){const y=100+i*50;drawArrow(ctx,400,y,250,y+10,'#f59e0b')}drawLabel(ctx,'内应力方向',320,310,'#f59e0b',13);ctx.fillStyle='#1e293b';ctx.fillRect(200,320,460,30);drawLabel(ctx,'各方向收缩不均→翘曲',430,340,'#ef4444',14)}
+function draw_fix_warp(ctx,t){moldRect(ctx,200,60,460,200,'#22c55e');ctx.fillStyle='#22c55e15';ctx.fillRect(203,63,454,194);for(let i=0;i<4;i++){const y=90+i*50;ctx.beginPath();ctx.moveTo(210,y);ctx.lineTo(650,y);ctx.strokeStyle='#3b82f6';ctx.lineWidth=3;ctx.setLineDash([10,5]);ctx.stroke();ctx.setLineDash([])}drawLabel(ctx,'均匀冷却水道',430,280,'#3b82f6',13);ctx.strokeStyle='#22c55e';ctx.lineWidth=3;ctx.strokeRect(250,100,360,120);drawLabel(ctx,'形状保持',430,165,'#22c55e',16);['壁厚均匀设计','多回路均衡模温','适当退火处理'].forEach((tip,i)=>{ctx.fillStyle='#14532d';ctx.fillRect(200+i*160,300,150,28);drawLabel(ctx,'✓ '+tip,275+i*160,318,'#86efac',12)})}
+
+// === SCENE 5: BURN ===
+function draw_burn(ctx,t){moldRect(ctx,150,60,560,240);const fX=150+(Math.sin(t*0.8)+1)/2*400;ctx.fillStyle='#f59e0b';ctx.fillRect(153,63,fX-153,234);if(fX>500){const bI=(fX-500)/200;ctx.beginPath();ctx.arc(680,180,20+bI*10,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,'+(0.5+bI*0.3)+')';ctx.fill();for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(680+Math.cos(t*5+i*1.3)*15,180+Math.sin(t*5+i*1.7)*15,3,0,Math.PI*2);ctx.fillStyle='#ef4444';ctx.fill()}drawLabel(ctx,'烧焦(黑痕)',680,230,'#ef4444',14)}const aX=fX+20;if(aX<700){ctx.beginPath();ctx.arc(aX,180,15,0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,0.4)';ctx.fill();drawLabel(ctx,'空气',aX,165,'#94a3b8',11)}drawLabel(ctx,'Diesel Effect',430,330,'#f59e0b',14)}
+function draw_air_trap(ctx,t){moldRect(ctx,150,60,560,240,'#ef4444');drawLabel(ctx,'无排气口',430,50,'#ef4444',14);[[600,120],[650,200],[580,260]].forEach(([px,py],i)=>{const r=12+Math.sin(t*3+i)*4;ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,0.3)';ctx.fill();ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.stroke();drawLabel(ctx,(225+Math.sin(t*2+i)*10).toFixed(0)+'℃',px,py+4,'#ef4444',10)});drawArrow(ctx,300,180,550,180,'#f59e0b');drawLabel(ctx,'熔体推进→',400,170,'#f59e0b',13);ctx.fillStyle='#1e293b';ctx.fillRect(200,310,460,40);drawLabel(ctx,'空气压缩后温度可达500℃+→灼烧POM',430,335,'#ef4444',14)}
+function draw_fix_burn(ctx,t){moldRect(ctx,150,60,560,240,'#22c55e');[[710,120],[710,180],[710,240]].forEach(([vx,vy],i)=>{ctx.fillStyle='#475569';ctx.fillRect(710,vy-5,40,10);ctx.beginPath();ctx.arc(vx+20+Math.sin(t*4+i)*10,vy,5,0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,0.4)';ctx.fill();drawArrow(ctx,vx,vy,vx+35,vy,'#60a5fa')});drawLabel(ctx,'排气槽',750,100,'#22c55e',12);const fX=150+(Math.sin(t*0.8)+1)/2*500;ctx.fillStyle='#f59e0b';ctx.fillRect(153,63,fX-153,234);drawLabel(ctx,'无烧焦',650,180,'#22c55e',16);ctx.fillStyle='#172554';ctx.fillRect(150,310,560,40);drawLabel(ctx,'填充末端降低注射速度→让空气有时间排出',430,335,'#93c5fd',14)}
+
+// === SCENE 6: MOLD DEPOSIT ===
+function draw_mold(ctx,t){ctx.fillStyle='#64748b';ctx.fillRect(100,60,660,240);const d=Math.min(t*5,30);ctx.fillStyle='#94a3b8';ctx.fillRect(100,60,300,240);drawLabel(ctx,'早期:模具干净',250,180,'#1e293b',14);ctx.fillStyle='rgba(120,80,40,'+Math.min(d/30,0.8)+')';ctx.fillRect(460,60,300,240);for(let i=0;i<Math.floor(d);i++){ctx.beginPath();ctx.arc(465+(i*73)%290,65+(i*47)%230,2+(i%3),0,Math.PI*2);ctx.fillStyle='rgba(80,50,20,'+(0.3+(i%4)*0.1)+')';ctx.fill()}drawLabel(ctx,'后期:模垢堆积',610,180,'#fca5a5',14);ctx.fillStyle='#1e293b';ctx.fillRect(100,310,660,40);drawLabel(ctx,'0模',130,335,'#22c55e',12);drawLabel(ctx,'500模',300,335,'#f59e0b',12);drawLabel(ctx,'1000模',470,335,'#ea580c',12);drawLabel(ctx,'3000模→',650,335,'#ef4444',12);ctx.fillStyle='#334155';ctx.fillRect(130,340,600,4);ctx.fillStyle='#ef4444';ctx.fillRect(130,340,600*Math.min(t/6,1),4)}
+function draw_deposit_cause(ctx,t){[{x:130,y:60,title:'树脂分解',desc:'热稳定性差 POM降解',c:'#ef4444'},{x:370,y:60,title:'助剂析出',desc:'小分子助剂迁移表面',c:'#f59e0b'},{x:130,y:190,title:'色母析出',desc:'载体与基体不相容',c:'#8b5cf6'},{x:370,y:190,title:'水口料',desc:'回料分解形成低聚物',c:'#06b6d4'}].forEach((s,i)=>{ctx.fillStyle=s.c+'20';ctx.fillRect(s.x,s.y,220,90);ctx.strokeStyle=s.c;ctx.lineWidth=2;ctx.strokeRect(s.x,s.y,220,90);drawLabel(ctx,s.title,s.x+110,s.y+30,s.c,15);drawLabel(ctx,s.desc,s.x+110,s.y+60,'#cbd5e1',12);drawArrow(ctx,s.x+110,s.y+(i<2?90:0),700,180,s.c+'80')});ctx.beginPath();ctx.arc(700,180,45,0,Math.PI*2);ctx.fillStyle='#7c2d12';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'模垢',700,185,'#fca5a5',16);ctx.fillStyle='#1e293b';ctx.fillRect(100,310,660,35);drawLabel(ctx,'好料(3000模干净) vs 差料(500模严重)',430,332,'#f59e0b',13)}
+function draw_fix_mold(ctx,t){ctx.fillStyle='#94a3b8';ctx.fillRect(130,60,350,200);ctx.strokeStyle='#22c55e';ctx.lineWidth=2;ctx.strokeRect(130,60,350,200);drawLabel(ctx,'优质原料+定期保养',305,160,'#14532d',16);['选择模垢慢的优质料','定期清理保养模具','改善模具排气系统','控制加工温度≤210℃','水口料添加比≤30%'].forEach((c,i)=>{const a=Math.min(Math.max(t-i*0.5,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(520,50+i*42,300,32);drawLabel(ctx,'✓ '+c,670,70+i*42,'rgba(134,239,172,'+a+')',12)});ctx.fillStyle='#172554';ctx.fillRect(130,280,690,40);drawLabel(ctx,'减少停机清理→生产效率提升约'+Math.min(t*5,30).toFixed(0)+'%',475,305,'#93c5fd',14)}
+
+// === SCENE 7: JETTING ===
+function draw_jetting_problem(ctx,t){moldRect(ctx,150,50,560,260);ctx.fillStyle='#475569';ctx.fillRect(100,160,50,40);drawLabel(ctx,'浇口',125,150,'#94a3b8',12);const phase=(t*0.6)%1;ctx.beginPath();ctx.moveTo(150,180);const sL=phase*540;for(let x=0;x<sL;x+=3)ctx.lineTo(150+x,180+Math.sin(x*0.06+t*3)*(25-x*0.03));ctx.strokeStyle='#f59e0b';ctx.lineWidth=8;ctx.stroke();if(phase>0.5){for(let i=0;i<3;i++){const mX=250+i*130,mY=100+i*30;ctx.beginPath();ctx.moveTo(mX-30,mY);ctx.quadraticCurveTo(mX,mY-10,mX+30,mY);ctx.quadraticCurveTo(mX,mY+10,mX-30,mY);ctx.strokeStyle='rgba(239,68,68,0.6)';ctx.lineWidth=2;ctx.stroke()}drawLabel(ctx,'蛇形纹路',400,80,'#ef4444',16)}drawArrow(ctx,200,120,500,120,'#ef4444');drawLabel(ctx,'熔体未接触模壁',350,112,'#ef4444',13);drawLabel(ctx,'喷射痕 - 蛇形纹路',430,340,'#ef4444',15)}
+function draw_jetting_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(30,20,800,330);ctx.fillStyle='#1e293b';ctx.fillRect(50,40,230,130);ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.strokeRect(50,40,230,130);drawLabel(ctx,'①浇口位置不当',165,60,'#f59e0b',13);ctx.fillStyle='#334155';ctx.fillRect(70,75,190,70);ctx.fillStyle='#475569';ctx.fillRect(55,100,15,20);const p1=(t*0.8)%1;ctx.beginPath();ctx.moveTo(70,110);ctx.lineTo(70+p1*180,110+Math.sin(t*4)*8);ctx.strokeStyle='#f59e0b';ctx.lineWidth=4;ctx.stroke();drawLabel(ctx,'正对开阔型腔',165,160,'#94a3b8',10);ctx.fillStyle='#1e293b';ctx.fillRect(310,40,230,130);ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.strokeRect(310,40,230,130);drawLabel(ctx,'②浇口截面太小',425,60,'#f59e0b',13);ctx.fillStyle='#334155';ctx.fillRect(330,75,190,70);ctx.fillStyle='#475569';ctx.fillRect(315,100,15,20);ctx.fillStyle='#f59e0b';ctx.fillRect(330,106,4,8);drawArrow(ctx,334,110,500,110,'#ef4444');drawLabel(ctx,'高速射出',420,100,'#ef4444',11);drawLabel(ctx,'速度过快',425,160,'#94a3b8',10);ctx.fillStyle='#1e293b';ctx.fillRect(570,40,240,130);ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.strokeRect(570,40,240,130);drawLabel(ctx,'③注射速度太快',690,60,'#f59e0b',13);ctx.beginPath();ctx.arc(690,115,35,Math.PI,0);ctx.strokeStyle='#475569';ctx.lineWidth=5;ctx.stroke();ctx.beginPath();ctx.arc(690,115,35,Math.PI,Math.PI+Math.PI*0.85);ctx.strokeStyle='#ef4444';ctx.lineWidth=5;ctx.stroke();const sA=-Math.PI*0.3+Math.sin(t*2)*0.1;ctx.beginPath();ctx.moveTo(690,115);ctx.lineTo(690+Math.cos(sA)*30,115+Math.sin(sA)*30);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'HIGH',690,100,'#ef4444',10);ctx.fillStyle='#7f1d1d';ctx.fillRect(100,190,660,50);drawLabel(ctx,'核心:熔体通过小浇口后突然进入大空间',430,210,'#fca5a5',14);drawLabel(ctx,'失去壁面约束→产生自由射流',430,230,'#fca5a5',13);ctx.fillStyle='#1e293b';ctx.fillRect(100,260,660,80);drawLabel(ctx,'正常:熔体贴壁推进',280,285,'#22c55e',13);drawLabel(ctx,'喷射:熔体飞越型腔',600,285,'#ef4444',13);ctx.beginPath();ctx.moveTo(180,310);ctx.quadraticCurveTo(280,300,380,310);ctx.strokeStyle='#22c55e';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.moveTo(500,310);ctx.lineTo(700,310);ctx.strokeStyle='#ef4444';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([])}
+function draw_jetting_solution(ctx,t){moldRect(ctx,150,50,560,260,'#22c55e');ctx.fillStyle='#475569';ctx.fillRect(100,160,50,40);ctx.fillStyle='#64748b';ctx.fillRect(200,80,10,200);drawLabel(ctx,'挡壁',205,70,'#60a5fa',11);const phase=(t*0.5)%1;ctx.beginPath();ctx.moveTo(150,180);ctx.lineTo(200,180);ctx.lineTo(200,80+(1-phase)*100);if(phase>0.3)ctx.lineTo(200+(phase-0.3)*700,80);ctx.strokeStyle='#f59e0b';ctx.lineWidth=8;ctx.stroke();const fG=ctx.createLinearGradient(200,0,700,0);fG.addColorStop(0,'#f59e0b');fG.addColorStop(Math.min(phase,1),'#d97706');fG.addColorStop(Math.min(phase+0.01,1),'transparent');ctx.fillStyle=fG;ctx.fillRect(153,53,554,254);drawArrow(ctx,220,140,400,140,'#22c55e');drawLabel(ctx,'熔体贴壁流动',310,132,'#22c55e',14);['浇口对准模壁','增大浇口截面','降低注射速度','采用扇形浇口'].forEach((c,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(150+i*150,320,140,28);drawLabel(ctx,'✓ '+c,220+i*150,338,'rgba(134,239,172,'+a+')',11)})}
+
+// === SCENE 8: WELD LINES ===
+function draw_weld_problem(ctx,t){moldRect(ctx,100,50,660,260);ctx.fillStyle='#64748b';ctx.beginPath();ctx.arc(430,180,40,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'型芯',430,185,'#1e293b',12);const phase=(t*0.4)%1,mR=phase*250;ctx.fillStyle='#f59e0b';ctx.fillRect(103,53,Math.min(mR,290),254);ctx.fillRect(757-Math.min(mR,290),53,Math.min(mR,290),254);if(phase>0.55){const wA=Math.min((phase-0.55)*4,1);ctx.beginPath();ctx.moveTo(430,53);ctx.lineTo(430,307);ctx.strokeStyle='rgba(239,68,68,'+wA+')';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.moveTo(420,120);ctx.lineTo(430,140);ctx.lineTo(440,120);ctx.strokeStyle='rgba(239,68,68,'+wA+')';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'熔接线',430,40,'#ef4444',16);drawLabel(ctx,'强度下降区域',430,330,'#ef4444',13)}drawArrow(ctx,150,180,350,180,'#60a5fa');drawArrow(ctx,710,180,510,180,'#60a5fa');drawLabel(ctx,'熔体前沿',250,170,'#60a5fa',12);drawLabel(ctx,'熔体前沿',610,170,'#60a5fa',12)}
+function draw_weld_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);const lG=ctx.createLinearGradient(80,0,380,0);lG.addColorStop(0,'#f59e0b');lG.addColorStop(1,'#ea580c');ctx.fillStyle=lG;ctx.fillRect(80,80,300,160);const rG=ctx.createLinearGradient(480,0,780,0);rG.addColorStop(0,'#ea580c');rG.addColorStop(1,'#f59e0b');ctx.fillStyle=rG;ctx.fillRect(480,80,300,160);ctx.fillStyle='#7c2d12';ctx.fillRect(380,80,100,160);drawLabel(ctx,'高温 200℃',230,70,'#22c55e',13);drawLabel(ctx,'低温 160℃',430,70,'#ef4444',13);drawLabel(ctx,'高温 200℃',630,70,'#22c55e',13);const pulse=Math.sin(t*3)*5;for(let i=0;i<4;i++){const y=110+i*35;ctx.beginPath();ctx.moveTo(350,y);ctx.lineTo(380+pulse,y);ctx.strokeStyle='#f59e0b';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.moveTo(510,y);ctx.lineTo(480-pulse,y);ctx.strokeStyle='#f59e0b';ctx.lineWidth=3;ctx.stroke();ctx.beginPath();ctx.moveTo(383+pulse,y-3);ctx.lineTo(477-pulse,y-3);ctx.strokeStyle='rgba(239,68,68,0.5)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([])}drawLabel(ctx,'分子链无法充分缠结',430,270,'#ef4444',14);['熔体前沿温度过低','注射速度不当','排气不良','模温偏低'].forEach((c,i)=>{ctx.fillStyle='#7f1d1d';ctx.fillRect(100+i*170,290,160,28);drawLabel(ctx,c,180+i*170,308,'#fca5a5',12)})}
+function draw_weld_solution(ctx,t){moldRect(ctx,100,40,660,230,'#22c55e');ctx.fillStyle='#475569';ctx.fillRect(80,100,20,30);ctx.fillRect(80,200,20,30);drawLabel(ctx,'浇口A',65,95,'#60a5fa',10);drawLabel(ctx,'浇口B',65,195,'#60a5fa',10);const phase=(t*0.5)%1,fL=phase*640;ctx.fillStyle='#f59e0b';ctx.fillRect(103,43,fL,224);if(phase>0.8){ctx.fillStyle='#22c55e';ctx.fillRect(720,43,37,224);drawLabel(ctx,'熔接线藏在此处',738,35,'#22c55e',11);drawLabel(ctx,'(不可见区域)',738,285,'#94a3b8',10)}['提高熔体/模温','优化注射速度','改善排气','重设浇口位置'].forEach((s,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(100+i*170,290,160,30);drawLabel(ctx,'✓ '+s,180+i*170,310,'rgba(134,239,172,'+a+')',12)});drawLabel(ctx,'溢料井可改善熔接线强度',430,345,'#93c5fd',13)}
+
+// === SCENE 9: FLASH ===
+function draw_flash_problem(ctx,t){ctx.fillStyle='#334155';ctx.fillRect(150,60,560,100);ctx.fillRect(150,200,560,100);ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.strokeRect(150,60,560,100);ctx.strokeRect(150,200,560,100);drawLabel(ctx,'上模',430,50,'#94a3b8',13);drawLabel(ctx,'下模',430,315,'#94a3b8',13);ctx.setLineDash([5,5]);ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(150,160);ctx.lineTo(710,160);ctx.stroke();ctx.beginPath();ctx.moveTo(150,200);ctx.lineTo(710,200);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#475569';ctx.fillRect(250,160,360,40);drawLabel(ctx,'型腔',430,185,'#e2e8f0',13);const fL=30+Math.sin(t*2)*10;ctx.fillStyle='#f59e0b';[[250,160,-1],[250,200,-1],[610,160,1],[610,200,1]].forEach(([bx,by,dir])=>{ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+fL*dir,by-5);ctx.lineTo(bx+fL*dir,by+5);ctx.closePath();ctx.fill()});drawLabel(ctx,'飞边',200,145,'#ef4444',14);drawLabel(ctx,'飞边',660,145,'#ef4444',14);drawArrow(ctx,300,180,200,160,'#ef4444');drawArrow(ctx,560,180,660,160,'#ef4444');drawLabel(ctx,'熔体从分型面溢出→形成飞边',430,345,'#ef4444',14)}
+function draw_flash_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);[{x:80,y:40,w:320,h:120,title:'锁模力不足',desc:'合模力无法抵抗注射压力\n模具被撑开产生间隙',icon:'F'},{x:430,y:40,w:320,h:120,title:'模具分型面损伤',desc:'长期使用后分型面磨损\n产生缝隙让熔体渗入',icon:'M'},{x:80,y:180,w:320,h:120,title:'料温过高',desc:'熔体粘度太低\n像水一样渗入微小间隙',icon:'T'},{x:430,y:180,w:320,h:120,title:'注射压力/速度过大',desc:'过大的注射压力\n超过锁模力承受能力',icon:'P'}].forEach(c=>{ctx.fillStyle='#7f1d1d40';ctx.fillRect(c.x,c.y,c.w,c.h);ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.strokeRect(c.x,c.y,c.w,c.h);ctx.beginPath();ctx.arc(c.x+35,c.y+35,20,0,Math.PI*2);ctx.fillStyle='#ef4444';ctx.fill();drawLabel(ctx,c.icon,c.x+35,c.y+41,'#fff',16);drawLabel(ctx,c.title,c.x+180,c.y+35,'#fca5a5',15);c.desc.split('\n').forEach((line,j)=>{drawLabel(ctx,line,c.x+180,c.y+60+j*20,'#cbd5e1',12)})});ctx.fillStyle='#7f1d1d';ctx.fillRect(150,315,560,30);drawLabel(ctx,'换料后流动性变化→需要重新调整锁模力和压力',430,335,'#fca5a5',13)}
+function draw_flash_solution(ctx,t){moldRect(ctx,150,50,560,220,'#22c55e');ctx.fillStyle='#475569';ctx.fillRect(250,120,360,80);drawLabel(ctx,'型腔',430,165,'#e2e8f0',13);for(let i=0;i<4;i++){const x=280+i*80,p=Math.sin(t*3+i*0.5)*3;drawArrow(ctx,x,30+p,x,50,'#22c55e');drawArrow(ctx,x,290-p,x,270,'#22c55e')}drawLabel(ctx,'锁模力充足',430,25,'#22c55e',14);drawLabel(ctx,'分型面紧密贴合 - 无飞边',430,300,'#22c55e',14);['增大锁模力','修复模具分型面','降低熔体温度','降低注射压力/速度'].forEach((c,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(100+i*170,320,160,28);drawLabel(ctx,'✓ '+c,180+i*170,338,'rgba(134,239,172,'+a+')',11)})}
+
+// === SCENE 10: DEMOLDING ===
+function draw_demold_problem(ctx,t){ctx.fillStyle='#334155';ctx.fillRect(200,40,460,80);ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.strokeRect(200,40,460,80);ctx.fillStyle='#334155';ctx.fillRect(200,200,460,100);ctx.strokeRect(200,200,460,100);const sO=Math.sin(t*2)*3;ctx.fillStyle='#e2e8f0';ctx.fillRect(250,120+sO,360,80);ctx.strokeStyle='#94a3b8';ctx.strokeRect(250,120+sO,360,80);const pP=Math.max(0,Math.sin(t*1.5))*15;ctx.fillStyle='#94a3b8';[330,430,530].forEach(x=>{ctx.fillRect(x,200-pP,10,20+pP)});if(pP>8){ctx.fillStyle='rgba(255,255,255,0.7)';[325,425,525].forEach(x=>{ctx.fillRect(x,190+sO,20,8)});ctx.beginPath();ctx.moveTo(430,195+sO);ctx.lineTo(435,185+sO);ctx.lineTo(425,175+sO);ctx.lineTo(432,165+sO);ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke()}drawLabel(ctx,'上模',430,35,'#94a3b8',12);drawLabel(ctx,'下模',430,315,'#94a3b8',12);drawLabel(ctx,'产品卡住',430,165,'#1e293b',14);drawLabel(ctx,'顶针',370,230,'#94a3b8',11);if(pP>8){drawLabel(ctx,'白色应力痕',380,155,'#ef4444',12);drawLabel(ctx,'开裂',450,155,'#ef4444',12)}drawLabel(ctx,'脱模困难 - 产品粘模/顶出开裂',430,345,'#ef4444',14)}
+function draw_demold_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);[{x:80,y:35,title:'顶出机构不足',desc:'顶针数量/面积不够\n顶出力分布不均',c:'#ef4444'},{x:300,y:35,title:'模具表面粗糙',desc:'型腔表面光洁度差\n摩擦力大导致粘模',c:'#f59e0b'},{x:520,y:35,title:'冷却时间不足',desc:'产品未充分冷却\n刚度不够就顶出',c:'#3b82f6'},{x:80,y:175,title:'保压过高',desc:'过填充导致包紧力大\n产品紧贴型腔',c:'#8b5cf6'},{x:300,y:175,title:'脱模斜度不够',desc:'侧壁斜度<1度\n脱模阻力过大',c:'#06b6d4'},{x:520,y:175,title:'收缩率变化',desc:'换料后收缩率不同\n包紧力发生变化',c:'#22c55e'}].forEach(c=>{ctx.fillStyle=c.c+'15';ctx.fillRect(c.x,c.y,200,110);ctx.strokeStyle=c.c;ctx.lineWidth=2;ctx.strokeRect(c.x,c.y,200,110);drawLabel(ctx,c.title,c.x+100,c.y+30,c.c,14);c.desc.split('\n').forEach((l,j)=>{drawLabel(ctx,l,c.x+100,c.y+55+j*20,'#cbd5e1',12)})});ctx.fillStyle='#1e293b';ctx.fillRect(150,310,560,30);drawLabel(ctx,'换料后收缩率变化→包紧力改变→脱模问题',430,330,'#f59e0b',13)}
+function draw_demold_solution(ctx,t){ctx.fillStyle='#334155';ctx.fillRect(200,40,460,80);ctx.strokeStyle='#22c55e';ctx.lineWidth=2;ctx.strokeRect(200,40,460,80);ctx.fillStyle='#334155';ctx.fillRect(200,200,460,100);ctx.strokeRect(200,200,460,100);const rY=Math.max(0,Math.sin(t*1.2)*20-10);ctx.fillStyle='#e2e8f0';ctx.fillRect(250,120-rY,360,80);ctx.strokeStyle='#22c55e';ctx.strokeRect(250,120-rY,360,80);for(let i=0;i<5;i++){ctx.fillStyle='#94a3b8';ctx.fillRect(290+i*60,195-rY,8,15+rY)}drawLabel(ctx,'增加顶针数量',430,230,'#22c55e',11);ctx.beginPath();ctx.moveTo(250,120-rY);ctx.lineTo(245,200);ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'脱模斜度',230,160-rY/2,'#60a5fa',10);ctx.fillStyle='rgba(34,197,94,0.1)';ctx.fillRect(252,122-rY,356,76);drawLabel(ctx,'模具表面抛光',430,165-rY,'#22c55e',12);['增加顶针','抛光模面','延长冷却','降低保压','增大斜度'].forEach((s,i)=>{const a=Math.min(Math.max(t-i*0.3,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(80+i*145,320,135,28);drawLabel(ctx,'✓ '+s,147+i*145,338,'rgba(134,239,172,'+a+')',11)})}
+
+// === SCENE 11: RIPPLE ===
+function draw_ripple_problem(ctx,t){ctx.fillStyle='#e2e8f0';ctx.fillRect(130,40,600,280);ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.strokeRect(130,40,600,280);drawLabel(ctx,'产品表面',430,30,'#94a3b8',13);const cx=600,cy=180;for(let r=20;r<250;r+=15){const a=Math.max(0,1-r/250);ctx.beginPath();ctx.arc(cx,cy,r,Math.PI*0.5,Math.PI*1.5);ctx.strokeStyle='rgba(100,116,139,'+(a*0.6+Math.sin(t*2+r*0.1)*0.1)+')';ctx.lineWidth=2;ctx.stroke()}const mx=350+Math.sin(t*0.5)*30,my=180;ctx.beginPath();ctx.arc(mx,my,55,0,Math.PI*2);ctx.strokeStyle='#60a5fa';ctx.lineWidth=3;ctx.stroke();ctx.save();ctx.beginPath();ctx.arc(mx,my,53,0,Math.PI*2);ctx.clip();for(let i=-4;i<=4;i++){const ry=my+i*12;ctx.beginPath();ctx.moveTo(mx-50,ry);for(let x=mx-50;x<mx+50;x+=3)ctx.lineTo(x,ry+Math.sin((x+t*20)*0.08)*3);ctx.strokeStyle='#475569';ctx.lineWidth=1.5;ctx.stroke()}ctx.restore();drawLabel(ctx,'涟漪纹 - 唱片状纹路',430,345,'#ef4444',15)}
+function draw_ripple_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);drawLabel(ctx,'熔体前沿"走走停停"导致涟漪',430,50,'#f59e0b',14);ctx.fillStyle='#334155';ctx.fillRect(100,80,660,100);ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.strokeRect(100,80,660,100);const phase=(t*2)%(Math.PI*2),isMoving=Math.sin(phase)>0;const meltX=100+((t*40)%660);ctx.fillStyle='#f59e0b';ctx.fillRect(103,83,meltX-103,94);ctx.beginPath();ctx.arc(meltX,130,8,0,Math.PI*2);ctx.fillStyle=isMoving?'#22c55e':'#ef4444';ctx.fill();drawLabel(ctx,isMoving?'流动':'停顿',meltX,75,isMoving?'#22c55e':'#ef4444',12);if(!isMoving){ctx.beginPath();ctx.moveTo(meltX,83);ctx.lineTo(meltX,177);ctx.strokeStyle='rgba(239,68,68,0.5)';ctx.lineWidth=2;ctx.stroke()}drawLabel(ctx,'时间 →',430,210,'#94a3b8',12);ctx.beginPath();ctx.moveTo(100,240);for(let x=100;x<760;x+=2)ctx.lineTo(x,240+Math.sin((x-100)*0.05+t*2)*20);ctx.strokeStyle='#f59e0b';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'速度',80,240,'#f59e0b',11);['熔体/模温太低','注射速度太慢','流道截面太小','流路太长'].forEach((c,i)=>{ctx.fillStyle='#7f1d1d';ctx.fillRect(100+i*170,280,160,28);drawLabel(ctx,c,180+i*170,298,'#fca5a5',12)});drawLabel(ctx,'每次停顿→表面留下一道痕迹→形成涟漪纹',430,330,'#ef4444',13)}
+function draw_ripple_solution(ctx,t){moldRect(ctx,150,50,560,220,'#22c55e');const phase=(t*0.6)%1,fL=phase*540;const g=ctx.createLinearGradient(150,0,150+fL,0);g.addColorStop(0,'#f59e0b');g.addColorStop(1,'#d97706');ctx.fillStyle=g;ctx.fillRect(153,53,fL,214);ctx.beginPath();ctx.arc(153+fL,160,8,0,Math.PI*2);ctx.fillStyle='#22c55e';ctx.fill();drawLabel(ctx,'匀速推进',153+fL,45,'#22c55e',12);ctx.fillStyle='#1e293b';ctx.fillRect(740,60,90,200);ctx.strokeStyle='#475569';ctx.strokeRect(740,60,90,200);ctx.fillStyle='#22c55e';ctx.fillRect(760,80,30,140);drawLabel(ctx,'200℃+',785,70,'#22c55e',12);drawLabel(ctx,'温度',785,275,'#94a3b8',11);['提高熔体温度','提高模具温度','增大注射速度','扩大流道截面'].forEach((s,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(100+i*170,290,160,28);drawLabel(ctx,'✓ '+s,180+i*170,308,'rgba(134,239,172,'+a+')',11)});drawLabel(ctx,'让熔体前沿保持连续稳定的推进速度',430,340,'#93c5fd',13)}
+
+// === SCENE 12: COLOR STREAKS ===
+function draw_color_problem(ctx,t){ctx.fillStyle='#e2e8f0';ctx.fillRect(130,40,600,280);ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.strokeRect(130,40,600,280);drawLabel(ctx,'产品表面',430,30,'#94a3b8',13);const colors=['#1e40af','#3b82f6','#60a5fa','#93c5fd','#1e3a8a','#2563eb'];for(let i=0;i<8;i++){const y=70+i*32;ctx.beginPath();ctx.moveTo(150,y);for(let x=150;x<700;x+=8)ctx.lineTo(x,y+Math.sin((x+t*30+i*50)*0.015)*(8+Math.sin(t+i*2)*4));ctx.strokeStyle=colors[i%colors.length]+'80';ctx.lineWidth=3+Math.sin(t*2+i)*1.5;ctx.stroke()}for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(200+i*100,120+(i*67)%160,25,15,0,0,Math.PI*2);ctx.fillStyle='rgba(30,64,175,0.2)';ctx.fill()}drawLabel(ctx,'色差条纹 - 颜色分布不均',430,345,'#ef4444',15)}
+function draw_color_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);ctx.fillStyle='#334155';ctx.fillRect(80,60,700,140);ctx.strokeStyle='#64748b';ctx.lineWidth=2;ctx.strokeRect(80,60,700,140);ctx.beginPath();ctx.moveTo(100,130);for(let x=100;x<760;x+=5)ctx.lineTo(x,130+Math.sin((x+t*60)*0.05)*15);ctx.strokeStyle='#94a3b8';ctx.lineWidth=3;ctx.stroke();[{x:200,y:80,l:'料筒死角'},{x:450,y:80,l:'喷嘴死角'},{x:650,y:80,l:'热流道死角'}].forEach((d,i)=>{const p=Math.sin(t*2+i)*5;ctx.beginPath();ctx.arc(d.x,d.y+p,18,0,Math.PI*2);ctx.fillStyle='rgba(120,53,15,0.7)';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,d.l,d.x,d.y-25+p,'#ef4444',11);for(let j=0;j<3;j++){ctx.beginPath();ctx.arc(d.x+Math.cos(t+j*2)*10,d.y+Math.sin(t+j*2)*10+p,3,0,Math.PI*2);ctx.fillStyle='#92400e';ctx.fill()}});drawArrow(ctx,430,200,430,230,'#f59e0b');drawLabel(ctx,'旧料混入→色差',430,250,'#ef4444',13);[{t:'色母分散不均',d:'颜料与基料相容性差'},{t:'材料污染',d:'混入异色料或旧料'},{t:'死角残留',d:'料筒/热流道死角积料'},{t:'螺杆混合不足',d:'背压太低混合效果差'}].forEach((c,i)=>{ctx.fillStyle='#7f1d1d';ctx.fillRect(80+i*175,270,165,55);drawLabel(ctx,c.t,162+i*175,292,'#fca5a5',13);drawLabel(ctx,c.d,162+i*175,312,'#cbd5e1',11)})}
+function draw_color_solution(ctx,t){ctx.fillStyle='#334155';ctx.fillRect(80,50,700,120);ctx.strokeStyle='#22c55e';ctx.lineWidth=2;ctx.strokeRect(80,50,700,120);ctx.beginPath();ctx.moveTo(100,110);for(let x=100;x<760;x+=5)ctx.lineTo(x,110+Math.sin((x+t*60)*0.05)*12);ctx.strokeStyle='#94a3b8';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#f59e0b60';ctx.fillRect(83,70,694,80);drawLabel(ctx,'熔体颜色均匀',430,115,'#22c55e',14);const cP=Math.min(t/4,1);ctx.fillStyle='#1e293b';ctx.fillRect(80,180,700,30);ctx.fillStyle='#22c55e';ctx.fillRect(80,180,700*cP,30);drawLabel(ctx,'清洗进度: '+(cP*100).toFixed(0)+'%',430,200,'#fff',13);['选用相容色母','提高背压混合','彻底清洗料筒','清洗喷嘴/热流道','用清洗料过渡'].forEach((s,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(60+i*150,230,140,28);drawLabel(ctx,'✓ '+s,130+i*150,248,'rgba(134,239,172,'+a+')',11)});ctx.fillStyle='#e2e8f0';ctx.fillRect(200,275,460,70);ctx.strokeStyle='#22c55e';ctx.lineWidth=2;ctx.strokeRect(200,275,460,70);ctx.fillStyle='#3b82f640';ctx.fillRect(203,278,454,64);drawLabel(ctx,'颜色均匀一致',430,315,'#22c55e',16)}
+
+// === SCENE 13: ENTRAPPED AIR ===
+function draw_entrap_problem(ctx,t){moldRect(ctx,150,50,560,260);const phase=(t*0.4)%1,fX=150+phase*500;ctx.fillStyle='#f59e0b';ctx.fillRect(153,53,fX-153,254);if(phase>0.3)[{x:500,y:120,r:18},{x:550,y:200,r:14},{x:480,y:260,r:12},{x:600,y:150,r:10}].forEach((b,i)=>{if(fX>b.x-30){const bA=Math.min((fX-b.x+30)/60,1),r=b.r*(1-bA*0.3);ctx.beginPath();ctx.arc(b.x,b.y,r,0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,'+(0.4*bA)+')';ctx.fill();ctx.strokeStyle='rgba(239,68,68,'+bA+')';ctx.lineWidth=2;ctx.stroke();if(bA>0.5)drawLabel(ctx,'气泡',b.x,b.y+4,'rgba(239,68,68,'+bA+')',10)}});if(phase>0.7){const bS=(phase-0.7)*50;ctx.beginPath();ctx.arc(520,53,bS,Math.PI,0);ctx.fillStyle='rgba(226,232,240,0.8)';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'表面鼓包',520,40,'#ef4444',12)}drawLabel(ctx,'困气 - 内部气泡/表面鼓包',430,340,'#ef4444',14)}
+function draw_entrap_cause(ctx,t){ctx.fillStyle='#1e293b';ctx.fillRect(50,20,760,330);drawLabel(ctx,'困气形成过程',430,45,'#f59e0b',15);moldRect(ctx,130,60,600,200);ctx.fillStyle='#475569';ctx.fillRect(110,140,20,40);drawLabel(ctx,'浇口',105,135,'#94a3b8',10);const phase=(t*0.5)%1,fX=130+phase*560;ctx.fillStyle='#f59e0b';ctx.fillRect(133,63,fX-133,194);if(phase>0.4){const aX=650,aY=160;ctx.beginPath();ctx.arc(aX,aY,20*(1-phase*0.3),0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,0.5)';ctx.fill();ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.stroke();drawLabel(ctx,'困气!',aX,aY+4,'#ef4444',11)}drawArrow(ctx,200,160,500,160,'#f59e0b');drawLabel(ctx,'熔体包围空气',430,55,'#ef4444',13);['排气系统不合理','排气槽堵塞','浇口位置不当','模具设计缺陷'].forEach((c,i)=>{ctx.fillStyle='#7f1d1d';ctx.fillRect(80+i*175,280,165,30);drawLabel(ctx,c,162+i*175,300,'#fca5a5',12)});drawLabel(ctx,'空气被熔体完全包围→无法排出→困气',430,335,'#ef4444',13)}
+function draw_entrap_solution(ctx,t){moldRect(ctx,130,50,600,210,'#22c55e');ctx.fillStyle='#475569';ctx.fillRect(110,130,20,40);drawLabel(ctx,'浇口',105,125,'#94a3b8',10);[[730,100],[730,160],[730,220]].forEach(([vx,vy],i)=>{ctx.fillStyle='#475569';ctx.fillRect(730,vy-5,35,10);ctx.beginPath();ctx.arc(vx+17+Math.sin(t*4+i)*8,vy,4,0,Math.PI*2);ctx.fillStyle='rgba(148,163,184,0.4)';ctx.fill();drawArrow(ctx,vx,vy,vx+30,vy,'#60a5fa')});drawLabel(ctx,'排气槽',770,85,'#22c55e',11);const phase=(t*0.5)%1,fX=130+phase*580;ctx.fillStyle='#f59e0b';ctx.fillRect(133,53,fX-133,204);drawLabel(ctx,'空气顺利排出→无困气',430,150,'#22c55e',15);['模流分析优化','改善排气系统','定期清理排气','调整浇口位置'].forEach((s,i)=>{const a=Math.min(Math.max(t-i*0.4,0),1);ctx.fillStyle='rgba(20,83,45,'+a+')';ctx.fillRect(100+i*170,280,160,28);drawLabel(ctx,'✓ '+s,180+i*170,298,'rgba(134,239,172,'+a+')',11)});drawLabel(ctx,'困气和烧焦经常一起出现，根本原因都是排气不良',430,335,'#93c5fd',13)}
+
+init();
+</script>
+</body>
+</html>
