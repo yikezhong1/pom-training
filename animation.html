@@ -36,9 +36,17 @@ canvas{display:block;width:100%;height:auto}
 .step-indicator{display:flex;gap:6px;align-items:center}
 .step-dot{width:8px;height:8px;border-radius:50%;background:#475569}
 .step-dot.active{background:#2563eb;width:24px;border-radius:4px}
-.progress-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:#1e293b;border-bottom:1px solid #334155;font-size:13px;color:#94a3b8;flex-wrap:wrap}
-.progress-bar .stat{display:flex;align-items:center;gap:4px}
-.progress-bar .stat-val{color:#60a5fa;font-weight:700}
+.scene-selector{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px;background:#1e293b;border-bottom:1px solid #334155;justify-content:center;position:relative;z-index:10}
+.scene-card{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid #475569;background:transparent;color:#94a3b8;cursor:pointer;font-size:12px;transition:all .2s;position:relative;z-index:10}
+.scene-card:hover{border-color:#60a5fa;color:#60a5fa}
+.scene-card.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.scene-card .sc-status{width:8px;height:8px;border-radius:50%;background:#475569;flex-shrink:0}
+.scene-card .sc-status.done{background:#22c55e}
+.scene-card .sc-status.wrong{background:#ef4444}
+.scene-card .sc-num{font-weight:700;color:#60a5fa;font-size:11px}
+.scene-card.active .sc-num{color:#fff}
+.scene-progress{text-align:center;padding:8px;font-size:12px;color:#94a3b8;background:#1e293b;border-bottom:1px solid #334155}
+.scene-progress .sp-val{color:#60a5fa;font-weight:700}
 .wrong-btn{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
 .wrong-btn:hover{background:#991b1b}
 .wrong-btn .badge{background:#ef4444;color:#fff;border-radius:50%;padding:1px 6px;font-size:11px;margin-left:4px}
@@ -65,7 +73,7 @@ canvas{display:block;width:100%;height:auto}
 .wrong-nav button:hover{background:#475569}
 .wrong-nav button:disabled{opacity:.3;cursor:default}
 .wrong-nav span{color:#94a3b8;font-size:13px}
-@media(max-width:600px){.quiz-box{padding:14px}.quiz-option{padding:10px 12px;font-size:13px}.progress-bar{font-size:12px;gap:8px}}
+@media(max-width:600px){.quiz-box{padding:14px}.quiz-option{padding:10px 12px;font-size:13px}.scene-selector{gap:4px;padding:8px}.scene-card{font-size:11px;padding:5px 8px}.scene-progress{font-size:11px;padding:6px}}
 </style>
 </head>
 <body>
@@ -75,7 +83,8 @@ canvas{display:block;width:100%;height:auto}
   <p>心连心POM销售 · 注塑调机实操指南 · 13种常见缺陷</p>
 </div>
 <div class="nav" id="nav"></div>
-<div class="progress-bar" id="progressBar"></div>
+<div class="scene-selector" id="sceneSelector"></div>
+<div class="scene-progress" id="sceneProgress"></div>
 <div id="quizContainer"></div>
 <div class="main" id="main"></div>
 <script>
@@ -113,6 +122,28 @@ const quizData=[
 
 let currentScene=0,currentStep=0,animFrame=null;
 let quizState={answered:{},wrongList:[],wrongIdx:0,viewMode:'normal'};
+
+// 从localStorage加载进度
+function loadProgress(){
+  try{
+    var saved=localStorage.getItem('pom_animation_progress');
+    if(saved){
+      var data=JSON.parse(saved);
+      quizState.answered=data.answered||{};
+      quizState.wrongList=data.wrongList||[];
+    }
+  }catch(e){}
+}
+
+// 保存进度到localStorage
+function saveProgress(){
+  try{
+    localStorage.setItem('pom_animation_progress',JSON.stringify({answered:quizState.answered,wrongList:quizState.wrongList}));
+  }catch(e){}
+}
+
+loadProgress();
+
 function init(){
   const nav=document.getElementById('nav');
   scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='nav-btn'+(i===0?' active':'');b.textContent=s.icon+' '+s.title;b.onclick=()=>switchScene(i);nav.appendChild(b)});
@@ -148,15 +179,24 @@ function nextStep(){currentStep++;renderScene()}
 function prevStep(){currentStep--;renderScene()}
 
 function updateProgress(){
-  var pb=document.getElementById('progressBar');if(!pb)return;
+  var sel=document.getElementById('sceneSelector');if(!sel)return;
+  var prog=document.getElementById('sceneProgress');
   var total=scenes.length,done=Object.keys(quizState.answered).length,correct=0;
   for(var k in quizState.answered)if(quizState.answered[k].correct)correct++;
   var wl=quizState.wrongList.length;
-  var h='<span class="stat">\u{1F4DD} 答题进度: <span class="stat-val">'+done+'/'+total+'</span></span>';
-  h+='<span class="stat">\u2705 正确: <span class="stat-val">'+correct+'</span></span>';
-  h+='<span class="stat">\u274C 错题: <span class="stat-val">'+wl+'</span></span>';
-  if(wl>0)h+='<button class="wrong-btn" onclick="showWrongList()">\u{1F4D6} 错题集 <span class="badge">'+wl+'</span></button>';
-  pb.innerHTML=h;
+  var h='';
+  scenes.forEach(function(s,i){
+    var status='';
+    if(quizState.answered[i])status=quizState.answered[i].correct?'done':'wrong';
+    var cls='scene-card'+(i===currentScene?' active':'');
+    h+='<div class="'+cls+'" onclick="switchScene('+i+')"><span class="sc-status '+status+'"></span><span class="sc-num">'+String.fromCharCode(65+i)+'</span><span>'+s.icon+' '+s.title+'</span></div>';
+  });
+  sel.innerHTML=h;
+  if(prog){
+    var ph='答题进度: <span class="sp-val">'+done+'/'+total+'</span> | 正确: <span class="sp-val">'+correct+'</span>';
+    if(wl>0)ph+=' | 错题: <span class="sp-val" style="color:#fca5a5">'+wl+'</span> <button class="wrong-btn" onclick="showWrongList()">\u{1F4D6} 错题集</button>';
+    prog.innerHTML=ph;
+  }
 }
 
 function renderQuiz(sceneIdx){
@@ -190,6 +230,7 @@ function answerQuiz(sceneIdx,selected){
     for(var i=0;i<quizState.wrongList.length;i++){if(quizState.wrongList[i].sceneIdx===sceneIdx){exists=true;break;}}
     if(!exists)quizState.wrongList.push({sceneIdx:sceneIdx,selected:selected});
   }
+  saveProgress();
   updateProgress();
   renderQuiz(sceneIdx);
   var s=scenes[sceneIdx];
